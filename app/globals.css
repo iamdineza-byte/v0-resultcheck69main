@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    /* Updated color tokens for Rwanda Education Portal design system */
+    --background: 0 0% 100%;
+    --foreground: 220 13% 26%;
+    --card: 120 60% 97%;
+    --card-foreground: 220 13% 26%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 26%;
+    --primary: 120 61% 34%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 60% 97%;
+    --secondary-foreground: 220 13% 26%;
+    --muted: 120 60% 97%;
+    --muted-foreground: 220 13% 26%;
+    --accent: 82 78% 55%;
+    --accent-foreground: 220 13% 26%;
+    --destructive: 20 90% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 83%;
+    --input: 0 0% 100%;
+    --ring: 120 61% 34%;
+    --chart-1: 120 61% 34%;
+    --chart-2: 82 78% 55%;
+    --chart-3: 120 60% 97%;
+    --chart-4: 39 100% 97%;
+    --chart-5: 20 90% 48%;
+    --radius: 0.5rem;
+    --sidebar-background: 120 60% 97%;
+    --sidebar-foreground: 220 13% 26%;
+    --sidebar-primary: 120 61% 34%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 82 78% 55%;
+    --sidebar-accent-foreground: 220 13% 26%;
+    --sidebar-border: 220 13% 83%;
+    --sidebar-ring: 120 61% 34%;
+  }
+  .dark {
+    /* Updated dark mode tokens to complement the green theme */
+    --background: 220 13% 6%;
+    --foreground: 0 0% 98%;
+    --card: 220 13% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 13% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 82 78% 55%;
+    --primary-foreground: 220 13% 6%;
+    --secondary: 220 13% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 13% 12%;
+    --muted-foreground: 220 13% 65%;
+    --accent: 120 61% 34%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 20 90% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 15%;
+    --input: 220 13% 12%;
+    --ring: 82 78% 55%;
+    --chart-1: 82 78% 55%;
+    --chart-2: 120 61% 34%;
+    --chart-3: 39 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 20 90% 48%;
+    --sidebar-background: 220 13% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 82 78% 55%;
+    --sidebar-primary-foreground: 220 13% 6%;
+    --sidebar-accent: 120 61% 34%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 13% 15%;
+    --sidebar-ring: 82 78% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
