@@ -68,7 +68,6 @@
     "react-dom": "^18",
     "react-hook-form": "latest",
     "react-resizable-panels": "latest",
-    "react-router-dom": "latest",
     "recharts": "latest",
     "sass": "latest",
     "sass-embedded": "latest",
