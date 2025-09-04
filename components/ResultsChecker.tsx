@@ -90,9 +90,9 @@ const ResultsChecker = () => {
     try {
       let apiUrl = ""
       if (activeTab === "ORDINARY") {
-        apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndex?indexNumber=${indexNumber}&_t=${Date.now()}&_cb=${Math.random()}`
+        apiUrl = `https://secondary.sdms.gov.rw/api/results-publication/findByIndex?indexNumber=${indexNumber}&_t=${Date.now()}&_cb=${Math.random()}`
       } else {
-        apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${indexNumber}&nationalId=${nationalId}&_t=${Date.now()}&_cb=${Math.random()}`
+        apiUrl = `https://secondary.sdms.gov.rw/api/results-publication/findByIndexAndNationalId?indexNumber=${indexNumber}&nationalId=${nationalId}&_t=${Date.now()}&_cb=${Math.random()}`
       }
 
       const res = await fetch(apiUrl, { headers: { Accept: "application/json" } })
@@ -151,7 +151,8 @@ const ResultsChecker = () => {
         const idx = `${schoolCode}${levelCode.toUpperCase()}${seqStr}${examYear}`
         try {
           const res = await fetch(
-            `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndex?indexNumber=${idx}&_t=${Date.now()}&_cb=${Math.random()}`,
+            `https://secondary.sdms.gov.rw/api/results-publication/findByIndex?indexNumber=${idx}&_t=${Date.now()}&_cb=${Math.random()}`,
+            { headers: { Accept: "application/json" } },
             { headers: { Accept: "application/json" } },
           )
           if (!res.ok) {
