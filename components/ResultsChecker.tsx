@@ -891,7 +891,7 @@ const ResultsChecker = () => {
                     <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[100px] sm:min-w-[120px] py-2 sm:py-3 px-2 sm:px-4 font-sans hidden sm:table-cell">
                       Combination
                     </TableHead>
-                    {classSubjects.slice(0, 3).map((subject) => (
+                    {classSubjects.map((subject) => (
                       <TableHead
                         key={subject}
                         className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[70px] sm:min-w-[90px] py-2 sm:py-3 px-1 sm:px-2 text-center font-sans"
@@ -954,7 +954,7 @@ const ResultsChecker = () => {
                       >
                         <div className="text-pretty leading-tight">{student.placedCombinationName || "-"}</div>
                       </TableCell>
-                      {classSubjects.slice(0, 3).map((subject) => {
+                      {classSubjects.map((subject) => {
                         const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
                         const mark =
                           typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
