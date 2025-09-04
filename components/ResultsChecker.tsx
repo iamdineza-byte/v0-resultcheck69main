@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft, Download, Eye } from "lucide-react"
+import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft, Download } from "lucide-react"
 
 // Helper for grade colors
 const getGradeColor = (grade: string) => {
@@ -902,11 +902,6 @@ const ResultsChecker = () => {
                         </div>
                       </TableHead>
                     ))}
-                    {classSubjects.length > 3 && (
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[50px] py-2 sm:py-3 px-1 sm:px-2 text-center font-sans">
-                        <Eye className="h-3 w-3 mx-auto" title={`+${classSubjects.length - 3} more subjects`} />
-                      </TableHead>
-                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -981,11 +976,6 @@ const ResultsChecker = () => {
                           </TableCell>
                         )
                       })}
-                      {classSubjects.length > 3 && (
-                        <TableCell className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center">
-                          <span className="text-xs text-muted-foreground font-sans">...</span>
-                        </TableCell>
-                      )}
                     </TableRow>
                   ))}
                 </TableBody>
