@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft, Download } from "lucide-react"
+import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft } from "lucide-react"
 
 // Helper for grade colors
 const getGradeColor = (grade: string) => {
@@ -72,6 +72,7 @@ const ResultsChecker = () => {
   const [classResults, setClassResults] = useState<StudentResult[]>([])
   const [classSchoolName, setClassSchoolName] = useState("")
   const [isClassModalOpen, setIsClassModalOpen] = useState(false)
+  const [showClassResults, setShowClassResults] = useState(false)
 
   // Individual fetch
   const getResults = async () => {
@@ -182,6 +183,7 @@ const ResultsChecker = () => {
           title: "Class Results Retrieved!",
           description: `Found results for ${results.length} students.`,
         })
+        setShowClassResults(true)
       } else {
         toast({
           title: "No Results Found",
@@ -334,19 +336,19 @@ const ResultsChecker = () => {
               <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1 bg-muted/50 p-1 rounded-lg">
                 <TabsTrigger
                   value="ADVANCED"
-                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium font-sans min-h-[44px] touch-manipulation"
+                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/20 data-[state=active]:via-primary/30 data-[state=active]:to-primary/20 data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
                 >
                   <span className="text-center leading-tight">Advanced / TSS / Professional</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="ORDINARY"
-                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium font-sans min-h-[44px] touch-manipulation"
+                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/20 data-[state=active]:via-primary/30 data-[state=active]:to-primary/20 data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
                 >
                   <span className="text-center leading-tight">Ordinary / Primary</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="CLASS"
-                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium font-sans min-h-[44px] touch-manipulation"
+                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/20 data-[state=active]:via-primary/30 data-[state=active]:to-primary/20 data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
                 >
                   <span className="text-center leading-tight">Whole Class</span>
                 </TabsTrigger>
@@ -828,174 +830,144 @@ const ResultsChecker = () => {
       </Dialog>
 
       {/* Class Results Modal */}
-      <Dialog open={isClassModalOpen} onOpenChange={setIsClassModalOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-hidden bg-background mx-2 sm:mx-auto">
-          <DialogHeader className="border-b border-border pb-3 sm:pb-4 sticky top-0 bg-background z-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
-              <div className="min-w-0 flex-1">
-                <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-foreground font-display">
-                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                    <School className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                  </div>
-                  <span className="truncate">Class Results Overview</span>
-                </DialogTitle>
-                <p className="text-muted-foreground mt-1 font-sans text-xs sm:text-sm">
-                  <span className="font-semibold text-foreground">{classSchoolName}</span> •
-                  <span className="font-semibold text-primary ml-1">{classResults.length}</span> students found
+      {showClassResults && classResults && (
+        <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
+          <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 overflow-hidden flex flex-col">
+            <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-gradient-to-r from-primary/10 to-primary/5 flex-shrink-0">
+              <DialogTitle className="text-lg sm:text-xl font-display font-bold text-primary">
+                Class Results - {classResults.length} Students
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="flex-1 min-h-0 relative">
+              <div className="h-full overflow-auto">
+                <Table className="w-full">
+                  <TableHeader className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm shadow-lg border-b-2 border-primary/30">
+                    <TableRow className="hover:bg-primary/5">
+                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans">
+                        Index No.
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans">
+                        Student Name
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans">
+                        Weight %
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans">
+                        Result
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell">
+                        Placed School
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell">
+                        Combination
+                      </TableHead>
+                      {classSubjects.map((subject) => (
+                        <TableHead
+                          key={subject}
+                          className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[70px] sm:min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans"
+                          title={subject}
+                        >
+                          <div className="text-pretty leading-tight text-xs">
+                            {subject.length > 8 ? subject.substring(0, 8) + "..." : subject}
+                          </div>
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {classResults.map((student, index) => (
+                      <TableRow
+                        key={index}
+                        className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
+                          index % 2 === 0 ? "bg-muted/10" : "bg-background"
+                        }`}
+                      >
+                        <TableCell className="font-mono text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground">
+                          <div className="text-pretty">{student.studentIndexNumber}</div>
+                        </TableCell>
+                        <TableCell
+                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground font-sans"
+                          title={student.studentNames}
+                        >
+                          <div className="text-pretty leading-tight">{student.studentNames}</div>
+                        </TableCell>
+                        <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
+                          <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
+                            {student.weightedPercent}%
+                          </span>
+                        </TableCell>
+                        <TableCell className="border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
+                          <Badge
+                            className={`text-xs font-semibold font-sans px-1.5 py-0.5 ${
+                              student.division === "PASS"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-destructive text-destructive-foreground"
+                            }`}
+                          >
+                            {student.division}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
+                          title={student.placedSchoolName || "-"}
+                        >
+                          <div className="text-pretty leading-tight">{student.placedSchoolName || "-"}</div>
+                        </TableCell>
+                        <TableCell
+                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
+                          title={student.placedCombinationName || "-"}
+                        >
+                          <div className="text-pretty leading-tight">{student.placedCombinationName || "-"}</div>
+                        </TableCell>
+                        {classSubjects.map((subject) => {
+                          const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
+                          const mark =
+                            typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
+                          const grade = markObj?.letterGrade ?? "-"
+                          return (
+                            <TableCell
+                              key={subject}
+                              className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center"
+                            >
+                              {markObj ? (
+                                <div className="space-y-0.5 sm:space-y-1">
+                                  <div className="font-medium text-xs text-foreground bg-muted/50 px-1 sm:px-2 py-0.5 rounded font-sans">
+                                    {mark}
+                                  </div>
+                                  <Badge
+                                    className={`${getGradeColor(grade)} text-xs px-1 py-0.5 font-semibold font-sans`}
+                                  >
+                                    {grade}
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground font-sans">-</span>
+                              )}
+                            </TableCell>
+                          )
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="p-3 sm:p-4 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
+                  <p className="text-xs sm:text-sm font-semibold text-destructive font-display">Important Notice</p>
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
+                  This bulk checking method is designed for{" "}
+                  <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
+                  Advanced level results require individual checking with National ID verification.
                 </p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button
-                  onClick={exportClassResultsCSV}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1 sm:gap-2 hover:bg-primary hover:text-primary-foreground transition-colors duration-200 font-sans min-h-[44px] touch-manipulation bg-transparent"
-                >
-                  <Download className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Export CSV</span>
-                  <span className="sm:hidden">Export</span>
-                </Button>
-                <Button
-                  onClick={() => setIsClassModalOpen(false)}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1 sm:gap-2 hover:bg-muted font-sans min-h-[44px] touch-manipulation"
-                >
-                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Close</span>
-                </Button>
-              </div>
             </div>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-hidden pt-2 sm:pt-4">
-            <div className="w-full h-[60vh] sm:h-[70vh] overflow-auto border border-border rounded-lg bg-background shadow-inner">
-              <Table className="w-full">
-                <TableHeader className="sticky top-0 bg-primary/5 z-10 shadow-sm border-b border-border">
-                  <TableRow className="hover:bg-primary/5">
-                    <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[80px] sm:min-w-[100px] py-2 sm:py-3 px-2 sm:px-4 font-sans">
-                      Index No.
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[120px] sm:min-w-[150px] py-2 sm:py-3 px-2 sm:px-4 font-sans">
-                      Student Name
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[60px] sm:min-w-[80px] py-2 sm:py-3 px-2 sm:px-4 text-center font-sans">
-                      Weight %
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[60px] sm:min-w-[70px] py-2 sm:py-3 px-2 sm:px-4 text-center font-sans">
-                      Result
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[100px] sm:min-w-[120px] py-2 sm:py-3 px-2 sm:px-4 font-sans hidden sm:table-cell">
-                      Placed School
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[100px] sm:min-w-[120px] py-2 sm:py-3 px-2 sm:px-4 font-sans hidden sm:table-cell">
-                      Combination
-                    </TableHead>
-                    {classSubjects.map((subject) => (
-                      <TableHead
-                        key={subject}
-                        className="text-xs font-semibold text-primary sticky top-0 bg-primary/5 border-r border-border min-w-[70px] sm:min-w-[90px] py-2 sm:py-3 px-1 sm:px-2 text-center font-sans"
-                        title={subject}
-                      >
-                        <div className="text-pretty leading-tight text-xs">
-                          {subject.length > 8 ? subject.substring(0, 8) + "..." : subject}
-                        </div>
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {classResults.map((student, index) => (
-                    <TableRow
-                      key={index}
-                      className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
-                        index % 2 === 0 ? "bg-muted/10" : "bg-background"
-                      }`}
-                    >
-                      <TableCell className="font-mono text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground">
-                        <div className="text-pretty">{student.studentIndexNumber}</div>
-                      </TableCell>
-                      <TableCell
-                        className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground font-sans"
-                        title={student.studentNames}
-                      >
-                        <div className="text-pretty leading-tight">{student.studentNames}</div>
-                      </TableCell>
-                      <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
-                        <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
-                          {student.weightedPercent}%
-                        </span>
-                      </TableCell>
-                      <TableCell className="border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
-                        <Badge
-                          className={`text-xs font-semibold font-sans px-1.5 py-0.5 ${
-                            student.division === "PASS"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-destructive text-destructive-foreground"
-                          }`}
-                        >
-                          {student.division}
-                        </Badge>
-                      </TableCell>
-                      <TableCell
-                        className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
-                        title={student.placedSchoolName || "-"}
-                      >
-                        <div className="text-pretty leading-tight">{student.placedSchoolName || "-"}</div>
-                      </TableCell>
-                      <TableCell
-                        className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
-                        title={student.placedCombinationName || "-"}
-                      >
-                        <div className="text-pretty leading-tight">{student.placedCombinationName || "-"}</div>
-                      </TableCell>
-                      {classSubjects.map((subject) => {
-                        const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
-                        const mark =
-                          typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
-                        const grade = markObj?.letterGrade ?? "-"
-                        return (
-                          <TableCell
-                            key={subject}
-                            className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center"
-                          >
-                            {markObj ? (
-                              <div className="space-y-0.5 sm:space-y-1">
-                                <div className="font-medium text-xs text-foreground bg-muted/50 px-1 sm:px-2 py-0.5 rounded font-sans">
-                                  {mark}
-                                </div>
-                                <Badge
-                                  className={`${getGradeColor(grade)} text-xs px-1 py-0.5 font-semibold font-sans`}
-                                >
-                                  {grade}
-                                </Badge>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-muted-foreground font-sans">-</span>
-                            )}
-                          </TableCell>
-                        )
-                      })}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
-                <p className="text-xs sm:text-sm font-semibold text-destructive font-display">Important Notice</p>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
-                This bulk checking method is designed for{" "}
-                <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
-                Advanced level results require individual checking with National ID verification.
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
