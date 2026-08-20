@@ -896,146 +896,148 @@ const ResultsChecker = () => {
           )}
         </DialogContent>
       </Dialog>
-
       {/* Class Results Modal */}
-      {showClassResults && classResults && (
-        <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
-          <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 overflow-hidden flex flex-col">
-            <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
-              <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary">
-                Class Results - {classResults.length} Students
-              </DialogTitle>
-            </DialogHeader>
+{showClassResults && classResults && (
+  <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
+    {/* Fix 1: Changed overflow-hidden to overflow-hidden-y or explicit overflow management */}
+    <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
+      <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
+        <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary">
+          Class Results - {classResults.length} Students
+        </DialogTitle>
+      </DialogHeader>
 
-            <div className="flex-1 min-h-0 relative">
-              <div className="h-full overflow-auto">
-                <Table className="w-full">
-                  <TableHeader className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm shadow-lg border-b-2 border-primary/30">
-                    <TableRow className="hover:bg-primary/5">
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans">
-                        Index No.
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans">
-                        Student Name
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans">
-                        Weight %
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans">
-                        Result
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell">
-                        Placed School
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell">
-                        Combination
-                      </TableHead>
-                      {classSubjects.map((subject) => (
-                        <TableHead
-                          key={subject}
-                          className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[70px] sm:min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans"
-                          title={subject}
-                        >
-                          <div className="text-pretty leading-tight text-xs">
-                            {subject.length > 8 ? subject.substring(0, 8) + "..." : subject}
-                          </div>
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {classResults.map((student, index) => (
-                      <TableRow
-                        key={index}
-                        className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
-                          index % 2 === 0 ? "bg-muted/10" : "bg-background"
-                        }`}
+      {/* Fix 2: Added min-w-0 to allow flex item to shrink and trigger scrolling */}
+      <div className="flex-1 min-h-0 min-w-0 relative flex flex-col">
+        {/* Fix 3: Added overflow-x-auto to guarantee horizontal scrolling */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto">
+          <Table className="w-full">
+            <TableHeader className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm shadow-lg border-b-2 border-primary/30">
+              <TableRow className="hover:bg-primary/5">
+                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                  Index No.
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                  Student Name
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
+                  Weight %
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
+                  Result
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
+                  Placed School
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
+                  Combination
+                </TableHead>
+                {classSubjects.map((subject) => (
+                  <TableHead
+                    key={subject}
+                    className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans whitespace-nowrap"
+                    title={subject}
+                  >
+                    <div className="text-pretty leading-tight text-xs">
+                      {subject.length > 8 ? subject.substring(0, 8) + "..." : subject}
+                    </div>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {classResults.map((student, index) => (
+                <TableRow
+                  key={index}
+                  className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
+                    index % 2 === 0 ? "bg-muted/10" : "bg-background"
+                  }`}
+                >
+                  <TableCell className="font-mono text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground whitespace-nowrap">
+                    <div>{student.studentIndexNumber}</div>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground font-sans whitespace-nowrap"
+                    title={student.studentNames}
+                  >
+                    <div>{student.studentNames}</div>
+                  </TableCell>
+                  <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
+                    <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
+                      {student.weightedPercent}%
+                    </span>
+                  </TableCell>
+                  <TableCell className="border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
+                    <Badge
+                      className={`text-xs font-semibold font-sans px-1.5 py-0.5 ${
+                        student.division === "PASS"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-destructive text-destructive-foreground"
+                      }`}
+                    >
+                      {student.division}
+                    </Badge>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell whitespace-nowrap"
+                    title={student.placedSchoolName || "-"}
+                  >
+                    <div>{student.placedSchoolName || "-"}</div>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell whitespace-nowrap"
+                    title={student.placedCombinationName || "-"}
+                  >
+                    <div>{student.placedCombinationName || "-"}</div>
+                  </TableCell>
+                  {classSubjects.map((subject) => {
+                    const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
+                    const mark =
+                      typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
+                    const grade = markObj?.letterGrade ?? "-"
+                    return (
+                      <TableCell
+                        key={subject}
+                        className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center whitespace-nowrap"
                       >
-                        <TableCell className="font-mono text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground">
-                          <div className="text-pretty">{student.studentIndexNumber}</div>
-                        </TableCell>
-                        <TableCell
-                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground font-sans"
-                          title={student.studentNames}
-                        >
-                          <div className="text-pretty leading-tight">{student.studentNames}</div>
-                        </TableCell>
-                        <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
-                          <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
-                            {student.weightedPercent}%
-                          </span>
-                        </TableCell>
-                        <TableCell className="border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
-                          <Badge
-                            className={`text-xs font-semibold font-sans px-1.5 py-0.5 ${
-                              student.division === "PASS"
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-destructive text-destructive-foreground"
-                            }`}
-                          >
-                            {student.division}
-                          </Badge>
-                        </TableCell>
-                        <TableCell
-                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
-                          title={student.placedSchoolName || "-"}
-                        >
-                          <div className="text-pretty leading-tight">{student.placedSchoolName || "-"}</div>
-                        </TableCell>
-                        <TableCell
-                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
-                          title={student.placedCombinationName || "-"}
-                        >
-                          <div className="text-pretty leading-tight">{student.placedCombinationName || "-"}</div>
-                        </TableCell>
-                        {classSubjects.map((subject) => {
-                          const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
-                          const mark =
-                            typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
-                          const grade = markObj?.letterGrade ?? "-"
-                          return (
-                            <TableCell
-                              key={subject}
-                              className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center"
+                        {markObj ? (
+                          <div className="space-y-0.5 sm:space-y-1">
+                            <div className="font-medium text-xs text-foreground bg-muted/50 px-1 sm:px-2 py-0.5 rounded font-sans">
+                              {mark}
+                            </div>
+                            <Badge
+                              className={`${getGradeColor(grade)} text-xs px-1 py-0.5 font-semibold font-sans`}
                             >
-                              {markObj ? (
-                                <div className="space-y-0.5 sm:space-y-1">
-                                  <div className="font-medium text-xs text-foreground bg-muted/50 px-1 sm:px-2 py-0.5 rounded font-sans">
-                                    {mark}
-                                  </div>
-                                  <Badge
-                                    className={`${getGradeColor(grade)} text-xs px-1 py-0.5 font-semibold font-sans`}
-                                  >
-                                    {grade}
-                                  </Badge>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-muted-foreground font-sans">-</span>
-                              )}
-                            </TableCell>
-                          )
-                        })}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                              {grade}
+                            </Badge>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground font-sans">-</span>
+                        )}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
-              <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
-                  <p className="text-xs sm:text-sm font-semibold text-destructive font-sans">Important Notice</p>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
-                  This bulk checking method is designed for{" "}
-                  <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
-                  Advanced level results require individual checking with National ID verification.
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+        <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
+            <p className="text-xs sm:text-sm font-semibold text-destructive font-sans">Important Notice</p>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
+            This bulk checking method is designed for{" "}
+            <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
+            Advanced level results require individual checking with National ID verification.
+          </p>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+)}
     </div>
   )
 }
