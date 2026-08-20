@@ -369,7 +369,7 @@ const ResultsChecker = () => {
               <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-2xl lg:text-3xl font-display font-bold text-primary-foreground text-balance leading-tight">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-sans font-bold text-primary-foreground text-balance leading-tight">
                 Rwanda Education Results Portal
               </h1>
               <p className="text-primary-foreground/80 text-xs sm:text-sm lg:text-base mt-1 font-sans">
@@ -388,8 +388,8 @@ const ResultsChecker = () => {
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
         {/* Main Form Card */}
         <Card className="shadow-lg bg-card border border-border mb-6 sm:mb-8 overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/5 to-accent/5 px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-            <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl lg:text-2xl text-foreground font-display">
+          <div className="bg-card px-4 sm:px-6 py-5 sm:py-6 border-b border-border">
+            <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl lg:text-2xl text-foreground font-sans">
               <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
                 <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
@@ -404,19 +404,19 @@ const ResultsChecker = () => {
               <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1 bg-muted/50 p-1 rounded-lg">
                 <TabsTrigger
                   value="ADVANCED"
-                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/20 data-[state=active]:via-primary/30 data-[state=active]:to-primary/20 data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
+                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border data-[state=active]:text-foreground data-[state=active]:shadow-sm font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
                 >
                   <span className="text-center leading-tight">Advanced / TSS / Professional</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="ORDINARY"
-                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/20 data-[state=active]:via-primary/30 data-[state=active]:to-primary/20 data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
+                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border data-[state=active]:text-foreground data-[state=active]:shadow-sm font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
                 >
                   <span className="text-center leading-tight">Ordinary / Primary</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="CLASS"
-                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/20 data-[state=active]:via-primary/30 data-[state=active]:to-primary/20 data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
+                  className="text-xs sm:text-sm p-3 sm:p-4 rounded-md data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border data-[state=active]:text-foreground data-[state=active]:shadow-sm font-medium font-sans min-h-[44px] touch-manipulation transition-all duration-300"
                 >
                   <span className="text-center leading-tight">Whole Class</span>
                 </TabsTrigger>
@@ -548,7 +548,7 @@ const ResultsChecker = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <Card className="bg-muted/30 border border-border/50 hover:shadow-md transition-shadow duration-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-foreground font-display">
+                  <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-foreground font-sans">
                     <User className="h-4 w-4 text-primary flex-shrink-0" />
                     <span>Need Help?</span>
                   </CardTitle>
@@ -571,7 +571,7 @@ const ResultsChecker = () => {
 
               <Card className="bg-muted/30 border border-border/50 hover:shadow-md transition-shadow duration-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-foreground font-display">
+                  <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-foreground font-sans">
                     <Award className="h-4 w-4 text-primary flex-shrink-0" />
                     <span>Quick Tips</span>
                   </CardTitle>
@@ -603,7 +603,7 @@ const ResultsChecker = () => {
                 <div className="p-3 sm:p-4 bg-muted/50 rounded-full w-fit mx-auto mb-4">
                   <School className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 font-display">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 font-sans">
                   No Class Results Yet
                 </h3>
                 <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed font-sans">
@@ -622,7 +622,7 @@ const ResultsChecker = () => {
         <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-background mx-2 sm:mx-auto">
           <DialogHeader className="border-b border-border pb-3 sm:pb-4 sticky top-0 bg-background z-10">
             <div className="flex items-center justify-between gap-2">
-              <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-foreground font-display min-w-0">
+              <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-foreground font-sans min-w-0">
                 <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
                   <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
@@ -642,13 +642,13 @@ const ResultsChecker = () => {
 
           {result && (
             <div className="space-y-6 sm:space-y-8 pt-4 sm:pt-6 px-1">
-              <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-xl p-4 sm:p-8 text-center shadow-lg">
+              <div className="bg-primary text-primary-foreground rounded-xl p-4 sm:p-8 text-center shadow-lg">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                   <div className="p-2 sm:p-3 bg-primary-foreground/20 rounded-full flex-shrink-0">
                     <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
                   <div className="text-center sm:text-left min-w-0">
-                    <h2 className="text-lg sm:text-2xl font-bold text-balance font-display leading-tight">
+                    <h2 className="text-lg sm:text-2xl font-bold text-balance font-sans leading-tight">
                       Academic Results Certificate
                     </h2>
                     <p className="text-primary-foreground/90 text-xs sm:text-sm mt-1 font-sans">
@@ -665,8 +665,8 @@ const ResultsChecker = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div className="lg:col-span-2">
                   <Card className="bg-card border border-border shadow-md hover:shadow-lg transition-shadow duration-200">
-                    <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30 border-b border-border">
-                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-foreground font-display">
+                    <CardHeader className="bg-muted/40 border-b border-border">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-foreground font-sans">
                         <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                         <span>Student Information</span>
                       </CardTitle>
@@ -678,7 +678,7 @@ const ResultsChecker = () => {
                             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide font-sans">
                               Full Name
                             </span>
-                            <span className="font-semibold text-foreground text-base sm:text-lg font-display leading-tight">
+                            <span className="font-semibold text-foreground text-base sm:text-lg font-sans leading-tight">
                               {result.studentNames}
                             </span>
                           </div>
@@ -747,16 +747,16 @@ const ResultsChecker = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 shadow-md">
+                  <Card className="bg-muted/30 border border-primary/20 shadow-md">
                     <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-foreground font-display">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-foreground font-sans">
                         <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                         <span>Performance Summary</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 font-display">
+                        <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 font-sans">
                           {result.weightedPercent}%
                         </div>
                         <div className="text-xs sm:text-sm text-muted-foreground font-sans">Weighted Percentage</div>
@@ -785,7 +785,7 @@ const ResultsChecker = () => {
 
                   <Card className="bg-card border border-border shadow-md">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm sm:text-base text-foreground font-display">
+                      <CardTitle className="text-sm sm:text-base text-foreground font-sans">
                         Grade Distribution
                       </CardTitle>
                     </CardHeader>
@@ -814,8 +814,8 @@ const ResultsChecker = () => {
               </div>
 
               <Card className="bg-card border border-border shadow-md">
-                <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30 border-b border-border">
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-foreground font-display">
+                <CardHeader className="bg-muted/40 border-b border-border">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-foreground font-sans">
                     <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     <span>Subject-Level Results</span>
                   </CardTitle>
@@ -876,10 +876,10 @@ const ResultsChecker = () => {
                 </CardContent>
               </Card>
 
-              <div className="bg-gradient-to-r from-muted/30 to-muted/20 border border-border/50 rounded-xl p-4 sm:p-6 text-center">
+              <div className="bg-muted/30 border border-border/50 rounded-xl p-4 sm:p-6 text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
-                  <p className="text-xs sm:text-sm font-medium text-foreground font-display">Important Notice</p>
+                  <p className="text-xs sm:text-sm font-medium text-foreground font-sans">Important Notice</p>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2 font-sans leading-relaxed">
                   This is not an official results checking website. For official verification, please visit:
@@ -901,8 +901,8 @@ const ResultsChecker = () => {
       {showClassResults && classResults && (
         <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
           <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 overflow-hidden flex flex-col">
-            <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-gradient-to-r from-primary/10 to-primary/5 flex-shrink-0">
-              <DialogTitle className="text-lg sm:text-xl font-display font-bold text-primary">
+            <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
+              <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary">
                 Class Results - {classResults.length} Students
               </DialogTitle>
             </DialogHeader>
@@ -1021,10 +1021,10 @@ const ResultsChecker = () => {
                 </Table>
               </div>
 
-              <div className="p-3 sm:p-4 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
+              <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
-                  <p className="text-xs sm:text-sm font-semibold text-destructive font-display">Important Notice</p>
+                  <p className="text-xs sm:text-sm font-semibold text-destructive font-sans">Important Notice</p>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
                   This bulk checking method is designed for{" "}
