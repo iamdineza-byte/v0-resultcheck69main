@@ -896,46 +896,63 @@ const ResultsChecker = () => {
           )}
         </DialogContent>
       </Dialog>
-      {/* Class Results Modal */}
+     {/* Class Results Modal */}
 {showClassResults && classResults && (
   <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
-    {/* Fix 1: Changed overflow-hidden to overflow-hidden-y or explicit overflow management */}
     <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
+      {/* Dialog Header Title with Attended School Name */}
       <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
-        <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary">
-          Class Results - {classResults.length} Students
+        <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary flex items-center justify-between gap-2">
+          <span>Class Results - {classResults.length} Students</span>
+          {(classSchoolName || classResults[0]?.attendedSchool) && (
+            <span className="text-xs sm:text-sm font-normal text-muted-foreground bg-background px-2.5 py-1 rounded-md border border-border">
+              School: <strong className="text-foreground">{classSchoolName || classResults[0]?.attendedSchool}</strong>
+            </span>
+          )}
         </DialogTitle>
       </DialogHeader>
 
-      {/* Fix 2: Added min-w-0 to allow flex item to shrink and trigger scrolling */}
       <div className="flex-1 min-h-0 min-w-0 relative flex flex-col">
-        {/* Fix 3: Added overflow-x-auto to guarantee horizontal scrolling */}
-        <div className="flex-1 overflow-x-auto overflow-y-auto">
-          <Table className="w-full">
-            <TableHeader className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm shadow-lg border-b-2 border-primary/30">
+        {/* Table Title / School Name Banner directly above the header */}
+        <div className="bg-primary/5 px-4 sm:px-6 py-2 border-b border-border flex items-center justify-between text-xs sm:text-sm font-sans flex-shrink-0">
+          <span className="font-semibold text-primary uppercase tracking-wide">
+            Attended School: <span className="text-foreground font-normal normal-case">{classSchoolName || classResults[0]?.attendedSchool || "N/A"}</span>
+          </span>
+          <span className="text-muted-foreground">
+            Year: {examYear} | Level: {levelCode.toUpperCase()}
+          </span>
+        </div>
+
+        {/* Overflow container */}
+        <div className="flex-1 overflow-auto max-h-[calc(90vh-200px)]">
+          <Table className="w-full border-collapse">
+            <TableHeader className="sticky top-0 z-20 shadow-sm">
               <TableRow className="hover:bg-primary/5">
-                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
                   Index No.
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
                   Student Name
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[140px] sm:min-w-[180px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                  Attended School
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
                   Weight %
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
                   Result
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
                   Placed School
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
                   Combination
                 </TableHead>
                 {classSubjects.map((subject) => (
                   <TableHead
                     key={subject}
-                    className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans whitespace-nowrap"
+                    className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans whitespace-nowrap"
                     title={subject}
                   >
                     <div className="text-pretty leading-tight text-xs">
@@ -961,6 +978,12 @@ const ResultsChecker = () => {
                     title={student.studentNames}
                   >
                     <div>{student.studentNames}</div>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans whitespace-nowrap"
+                    title={student.attendedSchool || "-"}
+                  >
+                    <div>{student.attendedSchool || "-"}</div>
                   </TableCell>
                   <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
                     <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
