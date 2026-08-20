@@ -32,17 +32,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${sourceSans.variable} ${playfairDisplay.variable}`}>
-      <head>
-        <style>{`
-html {
-  font-family: ${sourceSans.style.fontFamily};
-  --font-sans: ${sourceSans.style.fontFamily};
-  --font-serif: ${playfairDisplay.style.fontFamily};
-  --font-playfair: ${playfairDisplay.variable};
-  --font-source-sans: ${sourceSans.variable};
-}
-        `}</style>
-      </head>
       <body className="font-sans antialiased">
         <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
         <Analytics />
