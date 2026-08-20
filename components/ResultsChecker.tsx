@@ -53,6 +53,49 @@ interface StudentResult {
   placedCombinationName?: string
 }
 
+const RNE_PROXY_URL = "/api/rne-results"
+
+const readRneJson = async (response: Response): Promise<any> => {
+  const text = await response.text()
+  let data: unknown = null
+  try {
+    data = text ? JSON.parse(text) : null
+  } catch {
+    data = null
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.debug("[v0] RNE response", { status: response.status, body: data ?? text })
+  }
+
+  return data
+}
+
+const checkRnePublication = async () => {
+  const response = await fetch(`${RNE_PROXY_URL}?endpoint=status`, { cache: "no-store" })
+  const data = await readRneJson(response)
+  const publicationOpen = typeof data === "object" && data !== null && "publicationOpen" in data
+    ? (data as { publicationOpen?: unknown }).publicationOpen
+    : undefined
+
+  if (typeof publicationOpen !== "boolean") {
+    throw new Error("Invalid publication status response")
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.debug("[v0] RNE publication status", { publicationOpen })
+  }
+
+  return publicationOpen
+}
+
+const fetchRneByIndex = async (index: string) => {
+  const params = new URLSearchParams({ endpoint: "by-index", indexNumber: index, _t: String(Date.now()) })
+  const response = await fetch(`${RNE_PROXY_URL}?${params.toString()}`, { cache: "no-store" })
+  const data = await readRneJson(response)
+  return { response, data }
+}
+
 const ResultsChecker = () => {
   const [activeTab, setActiveTab] = useState("ADVANCED")
   const { toast } = useToast()
@@ -89,16 +132,32 @@ const ResultsChecker = () => {
     setResult(null)
 
     try {
-      let apiUrl = ""
+      let data: unknown
       if (activeTab === "ORDINARY") {
-        apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndex?indexNumber=${indexNumber}&_t=${Date.now()}&_cb=${Math.random()}`
-      } else {
-        apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${indexNumber}&nationalId=${nationalId}&_t=${Date.now()}&_cb=${Math.random()}`
-      }
+        const publicationOpen = await checkRnePublication()
+        if (!publicationOpen) {
+          toast({
+            title: "Results Not Available",
+            description: "Results publication is currently closed. Please try again later.",
+            variant: "destructive",
+          })
+          return
+        }
 
-      const res = await fetch(apiUrl, { headers: { Accept: "application/json" } })
-      if (!res.ok) throw new Error("Failed to fetch results")
-      const data = await res.json()
+        const { response, data: rneData } = await fetchRneByIndex(indexNumber)
+        if (response.status === 404) {
+          data = null
+        } else if (!response.ok) {
+          throw new Error("Failed to fetch results")
+        } else {
+          data = rneData
+        }
+      } else {
+        const apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${indexNumber}&nationalId=${nationalId}&_t=${Date.now()}&_cb=${Math.random()}`
+        const res = await fetch(apiUrl, { headers: { Accept: "application/json" } })
+        if (!res.ok) throw new Error("Failed to fetch results")
+        data = await res.json()
+      }
 
       if (!data || !data.studentNames) {
         toast({
@@ -147,21 +206,30 @@ const ResultsChecker = () => {
       const MAX_CONSECUTIVE_EMPTY = 20
       const MAX_STUDENTS = 1000
 
+      const publicationOpen = await checkRnePublication()
+      if (!publicationOpen) {
+        toast({
+          title: "Results Not Available",
+          description: "Results publication is currently closed. Please try again later.",
+          variant: "destructive",
+        })
+        return
+      }
+
       while (emptyCount < MAX_CONSECUTIVE_EMPTY && seq <= MAX_STUDENTS) {
         const seqStr = String(seq).padStart(3, "0")
         const idx = `${schoolCode}${levelCode.toUpperCase()}${seqStr}${examYear}`
         try {
-          const res = await fetch(
-            `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndex?indexNumber=${idx}&_t=${Date.now()}&_cb=${Math.random()}`,
-            { headers: { Accept: "application/json" } },
-          )
-          if (!res.ok) {
+          const { response: res, data } = await fetchRneByIndex(idx)
+          if (res.status === 404) {
             emptyCount++
             seq++
             continue
           }
-          const data = await res.json()
-          if (data && data.studentNames) {
+          if (!res.ok) {
+            throw new Error(`Failed to fetch class result (${res.status})`)
+          }
+          if (data && typeof data === "object" && "studentNames" in data) {
             results.push(data)
             emptyCount = 0
           } else {
