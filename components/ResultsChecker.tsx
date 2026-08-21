@@ -10,7 +10,19 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft, Printer, FileSpreadsheet } from "lucide-react"
+import { Icon as Iconify } from "@iconify/react"
+
+const makeIcon = (icon: string) => (props: Record<string, unknown>) => <Iconify icon={icon} {...props} />
+const Loader2 = makeIcon("solar:refresh-bold-duotone")
+const Trophy = makeIcon("solar:cup-star-bold-duotone")
+const School = makeIcon("solar:buildings-2-bold-duotone")
+const User = makeIcon("solar:user-circle-bold-duotone")
+const BookOpen = makeIcon("solar:book-bookmark-bold-duotone")
+const Award = makeIcon("solar:medal-star-bold-duotone")
+const GraduationCap = makeIcon("solar:graduation-cap-bold-duotone")
+const ArrowLeft = makeIcon("solar:arrow-left-linear")
+const Printer = makeIcon("solar:printer-2-bold-duotone")
+const FileSpreadsheet = makeIcon("solar:file-text-bold-duotone")
 
 // Helper for grade colors
 const getGradeColor = (grade: string) => {
@@ -991,8 +1003,8 @@ const ResultsChecker = () => {
         </div>
 
         {/* Overflow container */}
-        <div className="flex-1 overflow-auto max-h-[calc(90vh-200px)]">
-          <Table className="w-full border-collapse">
+<div className="print-table-wrapper flex-1 overflow-auto max-h-[calc(90vh-200px)]">
+  <Table className="w-full border-collapse">
             <TableHeader className="sticky top-0 z-20 shadow-sm">
               <TableRow className="hover:bg-primary/5">
                 <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">

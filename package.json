@@ -9,8 +9,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@eslint/js": "latest",
     "@hookform/resolvers": "^3.9.1",
+    "@iconify/react": "^6.0.2",
+    "@mui/material": "^9.3.1",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",

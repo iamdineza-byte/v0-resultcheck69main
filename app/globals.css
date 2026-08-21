@@ -104,8 +104,13 @@
   .printable-results .print-header { display: block !important; border-bottom: 2px solid #111827 !important; padding-bottom: 5mm !important; margin-bottom: 4mm !important; }
   .printable-results .print-header h1 { font-size: 16pt !important; font-weight: 700 !important; }
   .printable-results .print-header p { font-size: 9pt !important; }
-  .printable-results table { width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; font-size: 7.5pt !important; }
-  .printable-results th, .printable-results td { border: 0.5pt solid #64748b !important; padding: 2.5pt 3pt !important; line-height: 1.15 !important; white-space: normal !important; word-break: normal !important; }
+  .printable-results table { width: 100% !important; max-width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; font-size: 6.5pt !important; }
+  .printable-results th, .printable-results td { border: 0.5pt solid #64748b !important; padding: 2pt 2.5pt !important; line-height: 1.1 !important; white-space: normal !important; overflow-wrap: anywhere !important; word-break: break-word !important; vertical-align: middle !important; }
+  .printable-results th:first-child, .printable-results td:first-child { width: 12% !important; }
+  .printable-results th:nth-child(2), .printable-results td:nth-child(2) { width: 18% !important; }
+  .printable-results th:nth-last-child(-n+2), .printable-results td:nth-last-child(-n+2) { width: 8% !important; }
+  .printable-results .print-table-wrapper { width: 100% !important; overflow: visible !important; }
+  .printable-results .print-table-wrapper table { min-width: 0 !important; }
   .printable-results th { font-weight: 700 !important; }
   .printable-results thead { display: table-header-group !important; }
   .printable-results tr { break-inside: avoid !important; page-break-inside: avoid !important; }
