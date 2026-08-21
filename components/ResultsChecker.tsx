@@ -78,7 +78,7 @@ const readRneJson = async (response: Response): Promise<any> => {
   }
 
   if (process.env.NODE_ENV === "development") {
-    console.debug("[v0] RNE response", { status: response.status, body: data ?? text })
+    console.debug("[v0] RNE response", { status: response.status, hasBody: Boolean(text) })
   }
 
   return data
@@ -132,7 +132,9 @@ const ResultsChecker = () => {
 
   // Individual fetch
   const getResults = async () => {
-    if (!indexNumber || (activeTab === "ADVANCED" && !nationalId)) {
+    const normalizedIndex = indexNumber.trim()
+    const normalizedNationalId = nationalId.trim()
+    if (!/^[A-Za-z0-9-]{3,40}$/.test(normalizedIndex) || (activeTab === "ADVANCED" && !/^[A-Za-z0-9-]{3,40}$/.test(normalizedNationalId))) {
       toast({
         title: "Missing Information",
         description: "Please enter all required fields.",
@@ -157,7 +159,7 @@ const ResultsChecker = () => {
           return
         }
 
-        const { response, data: rneData } = await fetchRneByIndex(indexNumber)
+        const { response, data: rneData } = await fetchRneByIndex(normalizedIndex)
         if (response.status === 404) {
           data = null
         } else if (!response.ok) {
@@ -166,20 +168,22 @@ const ResultsChecker = () => {
           data = rneData
         }
       } else {
-        const apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${indexNumber}&nationalId=${nationalId}&_t=${Date.now()}&_cb=${Math.random()}`
+        const apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${encodeURIComponent(normalizedIndex)}&nationalId=${encodeURIComponent(normalizedNationalId)}&_t=${Date.now()}&_cb=${Math.random()}`
         const res = await fetch(apiUrl, { headers: { Accept: "application/json" } })
         if (!res.ok) throw new Error("Failed to fetch results")
         data = await res.json()
       }
 
-      if (!data || !data.studentNames) {
+      const candidate = data as Partial<StudentResult> | null
+      const hasResultShape = !!candidate && typeof candidate.studentNames === "string" && typeof candidate.studentIndexNumber === "string" && typeof candidate.academicYear === "string" && typeof candidate.weightedPercent === "number" && typeof candidate.division === "string" && Array.isArray(candidate.rawMark)
+      if (!hasResultShape) {
         toast({
           title: "No Results Found",
           description: "Please check your details and try again.",
           variant: "destructive",
         })
       } else {
-        setResult(data)
+        setResult(candidate as StudentResult)
         setIsModalOpen(true) // Open modal automatically when results are retrieved
         toast({
           title: "Results Retrieved!",
@@ -199,7 +203,10 @@ const ResultsChecker = () => {
 
   // Class fetch
   const fetchClassResults = async () => {
-    if (!schoolCode || !levelCode || !examYear) {
+    const normalizedSchoolCode = schoolCode.trim()
+    const normalizedLevelCode = levelCode.trim()
+    const normalizedExamYear = examYear.trim()
+    if (!/^[A-Za-z0-9-]{1,20}$/.test(normalizedSchoolCode) || !/^[A-Za-z0-9-]{1,10}$/.test(normalizedLevelCode) || !/^\d{4}$/.test(normalizedExamYear)) {
       toast({
         title: "Missing Information",
         description: "Please enter School Code, Level Code (OLC/PR), and Exam Year.",
@@ -216,6 +223,7 @@ const ResultsChecker = () => {
       const results: StudentResult[] = []
       let seq = 1
       let emptyCount = 0
+      let failedCount = 0
       const MAX_CONSECUTIVE_EMPTY = 20
       const MAX_STUDENTS = 1000
 
@@ -231,7 +239,7 @@ const ResultsChecker = () => {
 
       while (emptyCount < MAX_CONSECUTIVE_EMPTY && seq <= MAX_STUDENTS) {
         const seqStr = String(seq).padStart(3, "0")
-        const idx = `${schoolCode}${levelCode.toUpperCase()}${seqStr}${examYear}`
+        const idx = `${normalizedSchoolCode}${normalizedLevelCode.toUpperCase()}${seqStr}${normalizedExamYear}`
         try {
           const { response: res, data } = await fetchRneByIndex(idx)
           if (res.status === 404) {
@@ -240,6 +248,7 @@ const ResultsChecker = () => {
             continue
           }
           if (!res.ok) {
+            failedCount++
             throw new Error(`Failed to fetch class result (${res.status})`)
           }
           if (data && typeof data === "object" && "studentNames" in data) {
@@ -249,6 +258,7 @@ const ResultsChecker = () => {
             emptyCount++
           }
         } catch {
+          failedCount++
           emptyCount++
         }
         seq++
@@ -261,8 +271,10 @@ const ResultsChecker = () => {
         setClassResults(results)
         setIsClassModalOpen(true) // Open class modal automatically when results are retrieved
         toast({
-          title: "Class Results Retrieved!",
-          description: `Found results for ${results.length} students.`,
+          title: failedCount > 0 ? "Class Results Partially Retrieved" : "Class Results Retrieved!",
+          description: failedCount > 0
+            ? `Found ${results.length} students, but ${failedCount} lookups failed. Try again to complete the list.`
+            : `Found results for ${results.length} students.`,
         })
         setShowClassResults(true)
       } else {
@@ -299,7 +311,7 @@ const ResultsChecker = () => {
     return Array.from(subjectSet)
   }, [classResults])
 
-  const schoolName = result?.attendedSchool || classSchoolName || classResults[0]?.attendedSchool || schoolCode || "School results"
+  const schoolName = result?.attendedSchool || classSchoolName || classResults[0]?.attendedSchool || schoolCode.trim() || "School results"
   const reportDate = new Date().toLocaleDateString("en-GB", { dateStyle: "medium" })
 
   const printResults = () => {
@@ -444,7 +456,7 @@ const ResultsChecker = () => {
                 Rwanda Education Results Portal
               </h1>
               <p className="text-primary-foreground/80 text-xs sm:text-sm lg:text-base mt-1 font-sans">
-                Official academic results checking platform
+                Results lookup and reporting platform
               </p>
             </div>
           </div>
@@ -654,7 +666,7 @@ const ResultsChecker = () => {
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
-                    <span className="leading-relaxed">Results are final and official</span>
+                    <span className="leading-relaxed">Results are retrieved from the connected results service</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
@@ -733,7 +745,7 @@ const ResultsChecker = () => {
                 </div>
                 <div className="inline-flex items-center gap-2 bg-primary-foreground/10 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-sans">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-accent rounded-full flex-shrink-0"></div>
-                  <span>Official Results • Verified</span>
+                  <span>Results retrieved from service</span>
                 </div>
               </div>
 
