@@ -84,6 +84,7 @@
     "vite": "latest",
     "vue": "latest",
     "vue-router": "latest",
+    "xlsx": "^0.18.5",
     "yaml": "latest",
     "zod": "^3.24.1"
   },

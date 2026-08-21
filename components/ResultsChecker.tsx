@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import * as XLSX from "xlsx"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -286,7 +287,65 @@ const ResultsChecker = () => {
     return Array.from(subjectSet)
   }, [classResults])
 
-  // CSV Export function
+  const schoolName = result?.attendedSchool || classSchoolName || classResults[0]?.attendedSchool || schoolCode || "School results"
+  const reportDate = new Date().toLocaleDateString("en-GB", { dateStyle: "medium" })
+
+  const printResults = () => {
+    window.print()
+  }
+
+  const downloadWorkbook = (rows: Record<string, unknown>[], filename: string, title: string) => {
+    const workbook = XLSX.utils.book_new()
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+    worksheet["!cols"] = Object.keys(rows[0] || {}).map((key) => ({ wch: Math.max(14, Math.min(32, key.length + 4)) }))
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Results")
+    XLSX.writeFile(workbook, filename)
+    toast({ title: "Export complete", description: `${title} downloaded as an Excel workbook.` })
+  }
+
+  const exportClassResultsXlsx = () => {
+    if (!classResults.length) {
+      toast({ title: "No data", description: "No class results to export.", variant: "destructive" })
+      return
+    }
+    const rows = classResults.map((student) => {
+      const row: Record<string, unknown> = {
+        "School Name": schoolName,
+        "School Code": schoolCode || "-",
+        "Exam Year": examYear || student.academicYear,
+        "Index Number": student.studentIndexNumber,
+        "Student Name": student.studentNames,
+        "Weighted %": student.weightedPercent,
+        Division: student.division,
+        "Placed School": student.placedSchoolName || "-",
+        "Placed Combination": student.placedCombinationName || "-",
+      }
+      classSubjects.forEach((subject) => {
+        const mark = student.rawMark?.find((item) => item?.subject?.subjectName === subject)
+        row[subject] = mark ? `${Number(mark.markPercent).toFixed(1)}% (${mark.letterGrade || "-"})` : "-"
+      })
+      return row
+    })
+    downloadWorkbook(rows, `class-results-${schoolCode || "school"}-${examYear || "results"}.xlsx`, "Class results")
+  }
+
+  const exportIndividualXlsx = () => {
+    if (!result) return
+    const rows = result.rawMark?.map((subject) => ({
+      "School Name": schoolName,
+      "Student Name": result.studentNames,
+      "Index Number": result.studentIndexNumber,
+      "Academic Year": result.academicYear,
+      Subject: subject.subject.subjectName,
+      "Weight %": subject.subjectWeightedPercent,
+      "Mark %": subject.markPercent,
+      Grade: subject.letterGrade,
+      Division: result.division,
+    })) || []
+    downloadWorkbook(rows, `result-${result.studentIndexNumber}.xlsx`, "Individual results")
+  }
+
+  // Keep legacy CSV export as a compatibility fallback.
   const exportClassResultsCSV = () => {
     if (classResults.length === 0) {
       toast({
@@ -628,6 +687,10 @@ const ResultsChecker = () => {
                 </div>
                 <span className="truncate">Academic Results</span>
               </DialogTitle>
+              {result && <div className="flex items-center gap-2 print:hidden">
+                <Button onClick={printResults} variant="outline" size="sm">Print</Button>
+                <Button onClick={exportIndividualXlsx} variant="outline" size="sm">Excel</Button>
+              </div>}
               <Button
                 onClick={() => setIsModalOpen(false)}
                 variant="outline"
@@ -904,6 +967,10 @@ const ResultsChecker = () => {
       <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
         <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary flex items-center justify-between gap-2">
           <span>Class Results - {classResults.length} Students</span>
+          <div className="flex items-center gap-2 print:hidden">
+            <Button onClick={printResults} variant="outline" size="sm">Print</Button>
+            <Button onClick={exportClassResultsXlsx} variant="outline" size="sm">Excel</Button>
+          </div>
           {(classSchoolName || classResults[0]?.attendedSchool) && (
             <span className="text-xs sm:text-sm font-normal text-muted-foreground bg-background px-2.5 py-1 rounded-md border border-border">
               School: <strong className="text-foreground">{classSchoolName || classResults[0]?.attendedSchool}</strong>

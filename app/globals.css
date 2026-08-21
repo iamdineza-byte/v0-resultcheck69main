@@ -10,8 +10,8 @@
 
 @layer base {
   :root {
-    --font-sans: var(--font-geist);
-    --font-serif: var(--font-geist);
+    --font-sans: var(--font-dm-sans), Arial, sans-serif;
+    --font-serif: var(--font-dm-sans), Arial, sans-serif;
     --font-mono: var(--font-geist-mono);
     --background: 210 20% 98%;
     --foreground: 222 25% 14%;
@@ -90,4 +90,18 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@media print {
+  @page { size: A4 landscape; margin: 12mm; }
+  body { background: white !important; color: black !important; }
+  body > * { display: none !important; }
+  [role="dialog"] { display: block !important; position: static !important; width: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; border: 0 !important; }
+  [role="dialog"] > button { display: none !important; }
+  [role="dialog"] * { color: black !important; background: transparent !important; box-shadow: none !important; }
+  [role="dialog"] table { width: 100% !important; border-collapse: collapse !important; font-size: 8pt !important; }
+  [role="dialog"] th, [role="dialog"] td { border: 1px solid #777 !important; padding: 4px !important; }
+  [role="dialog"] thead { display: table-header-group; }
+  [role="dialog"] tr { break-inside: avoid; }
+  .print\:hidden { display: none !important; }
 }
