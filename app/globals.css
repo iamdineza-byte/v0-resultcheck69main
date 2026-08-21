@@ -93,15 +93,23 @@
 }
 
 @media print {
-  @page { size: A4 landscape; margin: 12mm; }
-  body { background: white !important; color: black !important; }
+  @page { size: A4 landscape; margin: 8mm; }
+  html, body { width: 100%; min-width: 0; background: white !important; color: #111827 !important; }
   body > * { display: none !important; }
-  [role="dialog"] { display: block !important; position: static !important; width: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; border: 0 !important; }
-  [role="dialog"] > button { display: none !important; }
-  [role="dialog"] * { color: black !important; background: transparent !important; box-shadow: none !important; }
-  [role="dialog"] table { width: 100% !important; border-collapse: collapse !important; font-size: 8pt !important; }
-  [role="dialog"] th, [role="dialog"] td { border: 1px solid #777 !important; padding: 4px !important; }
-  [role="dialog"] thead { display: table-header-group; }
-  [role="dialog"] tr { break-inside: avoid; }
+  body > [data-radix-portal] { display: block !important; }
+  .printable-results { display: block !important; position: static !important; inset: auto !important; width: 100% !important; max-width: none !important; height: auto !important; max-height: none !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; transform: none !important; }
+  .printable-results::backdrop { display: none !important; }
+  .printable-results > button { display: none !important; }
+  .printable-results * { color: #111827 !important; background: transparent !important; box-shadow: none !important; }
+  .printable-results .print-header { display: block !important; border-bottom: 2px solid #111827 !important; padding-bottom: 5mm !important; margin-bottom: 4mm !important; }
+  .printable-results .print-header h1 { font-size: 16pt !important; font-weight: 700 !important; }
+  .printable-results .print-header p { font-size: 9pt !important; }
+  .printable-results table { width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; font-size: 7.5pt !important; }
+  .printable-results th, .printable-results td { border: 0.5pt solid #64748b !important; padding: 2.5pt 3pt !important; line-height: 1.15 !important; white-space: normal !important; word-break: normal !important; }
+  .printable-results th { font-weight: 700 !important; }
+  .printable-results thead { display: table-header-group !important; }
+  .printable-results tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  .printable-results .overflow-auto, .printable-results .overflow-x-auto { overflow: visible !important; max-height: none !important; }
+  .printable-results .sticky { position: static !important; }
   .print\:hidden { display: none !important; }
 }

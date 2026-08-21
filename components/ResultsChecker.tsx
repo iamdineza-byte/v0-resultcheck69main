@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft } from "lucide-react"
+import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft, Printer, FileSpreadsheet } from "lucide-react"
 
 // Helper for grade colors
 const getGradeColor = (grade: string) => {
@@ -678,7 +678,7 @@ const ResultsChecker = () => {
 
       {/* Individual Results Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-background mx-2 sm:mx-auto">
+        <DialogContent className="printable-results max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-background mx-2 sm:mx-auto">
           <DialogHeader className="border-b border-border pb-3 sm:pb-4 sticky top-0 bg-background z-10">
             <div className="flex items-center justify-between gap-2">
               <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-foreground font-sans min-w-0">
@@ -688,8 +688,8 @@ const ResultsChecker = () => {
                 <span className="truncate">Academic Results</span>
               </DialogTitle>
               {result && <div className="flex items-center gap-2 print:hidden">
-                <Button onClick={printResults} variant="outline" size="sm">Print</Button>
-                <Button onClick={exportIndividualXlsx} variant="outline" size="sm">Excel</Button>
+                <Button onClick={printResults} variant="outline" size="sm"><Printer data-icon="inline-start" />Print</Button>
+                <Button onClick={exportIndividualXlsx} variant="outline" size="sm"><FileSpreadsheet data-icon="inline-start" />Excel</Button>
               </div>}
               <Button
                 onClick={() => setIsModalOpen(false)}
@@ -962,14 +962,14 @@ const ResultsChecker = () => {
      {/* Class Results Modal */}
 {showClassResults && classResults && (
   <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
-    <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
+    <DialogContent className="printable-results max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
       {/* Dialog Header Title with Attended School Name */}
       <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
         <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary flex items-center justify-between gap-2">
           <span>Class Results - {classResults.length} Students</span>
           <div className="flex items-center gap-2 print:hidden">
-            <Button onClick={printResults} variant="outline" size="sm">Print</Button>
-            <Button onClick={exportClassResultsXlsx} variant="outline" size="sm">Excel</Button>
+            <Button onClick={printResults} variant="outline" size="sm"><Printer data-icon="inline-start" />Print</Button>
+            <Button onClick={exportClassResultsXlsx} variant="outline" size="sm"><FileSpreadsheet data-icon="inline-start" />Excel</Button>
           </div>
           {(classSchoolName || classResults[0]?.attendedSchool) && (
             <span className="text-xs sm:text-sm font-normal text-muted-foreground bg-background px-2.5 py-1 rounded-md border border-border">
