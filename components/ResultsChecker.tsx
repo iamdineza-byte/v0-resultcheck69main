@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import * as XLSX from "xlsx"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +10,19 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Trophy, School, User, BookOpen, Award, GraduationCap, ArrowLeft } from "lucide-react"
+import { Icon as Iconify } from "@iconify/react"
+
+const makeIcon = (icon: string) => (props: Record<string, unknown>) => <Iconify icon={icon} {...props} />
+const Loader2 = makeIcon("solar:refresh-bold-duotone")
+const Trophy = makeIcon("solar:cup-star-bold-duotone")
+const School = makeIcon("solar:buildings-2-bold-duotone")
+const User = makeIcon("solar:user-circle-bold-duotone")
+const BookOpen = makeIcon("solar:book-bookmark-bold-duotone")
+const Award = makeIcon("solar:medal-star-bold-duotone")
+const GraduationCap = makeIcon("solar:graduation-cap-bold-duotone")
+const ArrowLeft = makeIcon("solar:arrow-left-linear")
+const Printer = makeIcon("solar:printer-2-bold-duotone")
+const FileSpreadsheet = makeIcon("solar:file-text-bold-duotone")
 
 // Helper for grade colors
 const getGradeColor = (grade: string) => {
@@ -65,7 +78,7 @@ const readRneJson = async (response: Response): Promise<any> => {
   }
 
   if (process.env.NODE_ENV === "development") {
-    console.debug("[v0] RNE response", { status: response.status, body: data ?? text })
+    console.debug("[v0] RNE response", { status: response.status, hasBody: Boolean(text) })
   }
 
   return data
@@ -102,7 +115,6 @@ const ResultsChecker = () => {
 
   // Individual states
   const [indexNumber, setIndexNumber] = useState("")
-  const [nationalId, setNationalId] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<StudentResult | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -119,7 +131,8 @@ const ResultsChecker = () => {
 
   // Individual fetch
   const getResults = async () => {
-    if (!indexNumber || (activeTab === "ADVANCED" && !nationalId)) {
+    const normalizedIndex = indexNumber.trim()
+      if (!/^[A-Za-z0-9-]{3,40}$/.test(normalizedIndex)) {
       toast({
         title: "Missing Information",
         description: "Please enter all required fields.",
@@ -133,40 +146,35 @@ const ResultsChecker = () => {
 
     try {
       let data: unknown
-      if (activeTab === "ORDINARY") {
-        const publicationOpen = await checkRnePublication()
-        if (!publicationOpen) {
-          toast({
-            title: "Results Not Available",
-            description: "Results publication is currently closed. Please try again later.",
-            variant: "destructive",
-          })
-          return
-        }
-
-        const { response, data: rneData } = await fetchRneByIndex(indexNumber)
-        if (response.status === 404) {
-          data = null
-        } else if (!response.ok) {
-          throw new Error("Failed to fetch results")
-        } else {
-          data = rneData
-        }
-      } else {
-        const apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${indexNumber}&nationalId=${nationalId}&_t=${Date.now()}&_cb=${Math.random()}`
-        const res = await fetch(apiUrl, { headers: { Accept: "application/json" } })
-        if (!res.ok) throw new Error("Failed to fetch results")
-        data = await res.json()
+      const publicationOpen = await checkRnePublication()
+      if (!publicationOpen) {
+        toast({
+          title: "Results Not Available",
+          description: "Results publication is currently closed. Please try again later.",
+          variant: "destructive",
+        })
+        return
       }
 
-      if (!data || !data.studentNames) {
+      const { response, data: rneData } = await fetchRneByIndex(normalizedIndex)
+      if (response.status === 404) {
+        data = null
+      } else if (!response.ok) {
+        throw new Error("Failed to fetch results")
+      } else {
+        data = rneData
+      }
+
+      const candidate = data as Partial<StudentResult> | null
+      const hasResultShape = !!candidate && typeof candidate.studentNames === "string" && typeof candidate.studentIndexNumber === "string" && typeof candidate.academicYear === "string" && typeof candidate.weightedPercent === "number" && typeof candidate.division === "string" && Array.isArray(candidate.rawMark)
+      if (!hasResultShape) {
         toast({
           title: "No Results Found",
           description: "Please check your details and try again.",
           variant: "destructive",
         })
       } else {
-        setResult(data)
+        setResult(candidate as StudentResult)
         setIsModalOpen(true) // Open modal automatically when results are retrieved
         toast({
           title: "Results Retrieved!",
@@ -186,10 +194,13 @@ const ResultsChecker = () => {
 
   // Class fetch
   const fetchClassResults = async () => {
-    if (!schoolCode || !levelCode || !examYear) {
+    const normalizedSchoolCode = schoolCode.trim()
+    const normalizedLevelCode = levelCode.trim()
+    const normalizedExamYear = examYear.trim()
+    if (!/^[A-Za-z0-9]{6}$/.test(normalizedSchoolCode) || !/^[A-Za-z]{3}$/.test(normalizedLevelCode) || !/^\d{4}$/.test(normalizedExamYear)) {
       toast({
         title: "Missing Information",
-        description: "Please enter School Code, Level Code (OLC/PR), and Exam Year.",
+        description: "Enter a 6-character school code, 3-letter combination code, and 4-digit exam year.",
         variant: "destructive",
       })
       return
@@ -203,6 +214,7 @@ const ResultsChecker = () => {
       const results: StudentResult[] = []
       let seq = 1
       let emptyCount = 0
+      let failedCount = 0
       const MAX_CONSECUTIVE_EMPTY = 20
       const MAX_STUDENTS = 1000
 
@@ -218,7 +230,7 @@ const ResultsChecker = () => {
 
       while (emptyCount < MAX_CONSECUTIVE_EMPTY && seq <= MAX_STUDENTS) {
         const seqStr = String(seq).padStart(3, "0")
-        const idx = `${schoolCode}${levelCode.toUpperCase()}${seqStr}${examYear}`
+        const idx = `${normalizedSchoolCode}${normalizedLevelCode.toUpperCase()}${seqStr}${normalizedExamYear}`
         try {
           const { response: res, data } = await fetchRneByIndex(idx)
           if (res.status === 404) {
@@ -236,6 +248,7 @@ const ResultsChecker = () => {
             emptyCount++
           }
         } catch {
+          failedCount++
           emptyCount++
         }
         seq++
@@ -248,8 +261,10 @@ const ResultsChecker = () => {
         setClassResults(results)
         setIsClassModalOpen(true) // Open class modal automatically when results are retrieved
         toast({
-          title: "Class Results Retrieved!",
-          description: `Found results for ${results.length} students.`,
+          title: failedCount > 0 ? "Class Results Partially Retrieved" : "Class Results Retrieved!",
+          description: failedCount > 0
+            ? `Found ${results.length} students, but ${failedCount} lookups failed. Try again to complete the list.`
+            : `Found results for ${results.length} students.`,
         })
         setShowClassResults(true)
       } else {
@@ -286,7 +301,65 @@ const ResultsChecker = () => {
     return Array.from(subjectSet)
   }, [classResults])
 
-  // CSV Export function
+  const schoolName = result?.attendedSchool || classSchoolName || classResults[0]?.attendedSchool || schoolCode.trim() || "School results"
+  const reportDate = new Date().toLocaleDateString("en-GB", { dateStyle: "medium" })
+
+  const printResults = () => {
+    window.print()
+  }
+
+  const downloadWorkbook = (rows: Record<string, unknown>[], filename: string, title: string) => {
+    const workbook = XLSX.utils.book_new()
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+    worksheet["!cols"] = Object.keys(rows[0] || {}).map((key) => ({ wch: Math.max(14, Math.min(32, key.length + 4)) }))
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Results")
+    XLSX.writeFile(workbook, filename)
+    toast({ title: "Export complete", description: `${title} downloaded as an Excel workbook.` })
+  }
+
+  const exportClassResultsXlsx = () => {
+    if (!classResults.length) {
+      toast({ title: "No data", description: "No class results to export.", variant: "destructive" })
+      return
+    }
+    const rows = classResults.map((student) => {
+      const row: Record<string, unknown> = {
+        "School Name": schoolName,
+        "School Code": schoolCode || "-",
+        "Exam Year": examYear || student.academicYear,
+        "Index Number": student.studentIndexNumber,
+        "Student Name": student.studentNames,
+        "Weighted %": student.weightedPercent,
+        Division: student.division,
+        "Placed School": student.placedSchoolName || "-",
+        "Placed Combination": student.placedCombinationName || "-",
+      }
+      classSubjects.forEach((subject) => {
+        const mark = student.rawMark?.find((item) => item?.subject?.subjectName === subject)
+        row[subject] = mark ? `${Number(mark.markPercent).toFixed(1)}% (${mark.letterGrade || "-"})` : "-"
+      })
+      return row
+    })
+    downloadWorkbook(rows, `class-results-${schoolCode || "school"}-${examYear || "results"}.xlsx`, "Class results")
+  }
+
+  const exportIndividualXlsx = () => {
+    if (!result) return
+    const rows = result.rawMark?.map((subject) => ({
+      "School Name": schoolName,
+      "Student Name": result.studentNames,
+      "Index Number": result.studentIndexNumber,
+      "Academic Year": result.academicYear,
+      Subject: subject.subject.subjectName,
+      "Weight %": subject.subjectWeightedPercent,
+      "Mark %": subject.markPercent,
+      Grade: subject.letterGrade,
+      Division: result.division,
+    })) || []
+    downloadWorkbook(rows, `result-${result.studentIndexNumber}.xlsx`, "Individual results")
+  }
+
+  // Keep legacy CSV export as a compatibility fallback.
   const exportClassResultsCSV = () => {
     if (classResults.length === 0) {
       toast({
@@ -373,7 +446,7 @@ const ResultsChecker = () => {
                 Rwanda Education Results Portal
               </h1>
               <p className="text-primary-foreground/80 text-xs sm:text-sm lg:text-base mt-1 font-sans">
-                Official academic results checking platform
+                Results lookup and reporting platform
               </p>
             </div>
           </div>
@@ -431,15 +504,6 @@ const ResultsChecker = () => {
                       placeholder="Enter your index number"
                       value={indexNumber}
                       onChange={(e) => setIndexNumber(e.target.value)}
-                      className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground font-sans">National Identity Number</label>
-                    <Input
-                      placeholder="Enter your national ID"
-                      value={nationalId}
-                      onChange={(e) => setNationalId(e.target.value)}
                       className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
                     />
                   </div>
@@ -506,9 +570,9 @@ const ResultsChecker = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground font-sans">Level Code</label>
+                    <label className="text-sm font-medium text-foreground font-sans">Combination Code</label>
                     <Input
-                      placeholder="e.g., OLC for Ordinary, PR for Primary"
+                      placeholder="e.g., OLC, PR, or FOP"
                       value={levelCode}
                       onChange={(e) => setLevelCode(e.target.value)}
                       className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
@@ -583,7 +647,7 @@ const ResultsChecker = () => {
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
-                    <span className="leading-relaxed">Results are final and official</span>
+                    <span className="leading-relaxed">Results are retrieved from the connected results service</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-accent rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
@@ -607,7 +671,7 @@ const ResultsChecker = () => {
                   No Class Results Yet
                 </h3>
                 <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed font-sans">
-                  Enter the School Code, Level Code (OLC/PR), and Exam Year above, then click{" "}
+                  Enter the School Code, Combination Code (such as OLC, PR, or FOP), and Exam Year above, then click{" "}
                   <span className="font-semibold text-primary">Fetch Class Results</span> to view all student results
                   for that class.
                 </p>
@@ -619,7 +683,7 @@ const ResultsChecker = () => {
 
       {/* Individual Results Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-background mx-2 sm:mx-auto">
+        <DialogContent className="printable-results max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto bg-background mx-2 sm:mx-auto">
           <DialogHeader className="border-b border-border pb-3 sm:pb-4 sticky top-0 bg-background z-10">
             <div className="flex items-center justify-between gap-2">
               <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-foreground font-sans min-w-0">
@@ -628,6 +692,10 @@ const ResultsChecker = () => {
                 </div>
                 <span className="truncate">Academic Results</span>
               </DialogTitle>
+              {result && <div className="flex items-center gap-2 print:hidden">
+                <Button onClick={printResults} variant="outline" size="sm"><Printer data-icon="inline-start" />Print</Button>
+                <Button onClick={exportIndividualXlsx} variant="outline" size="sm"><FileSpreadsheet data-icon="inline-start" />Excel</Button>
+              </div>}
               <Button
                 onClick={() => setIsModalOpen(false)}
                 variant="outline"
@@ -658,7 +726,7 @@ const ResultsChecker = () => {
                 </div>
                 <div className="inline-flex items-center gap-2 bg-primary-foreground/10 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-sans">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-accent rounded-full flex-shrink-0"></div>
-                  <span>Official Results • Verified</span>
+                  <span>Results retrieved from service</span>
                 </div>
               </div>
 
@@ -896,146 +964,175 @@ const ResultsChecker = () => {
           )}
         </DialogContent>
       </Dialog>
+     {/* Class Results Modal */}
+{showClassResults && classResults && (
+  <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
+    <DialogContent className="printable-results max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
+      {/* Dialog Header Title with Attended School Name */}
+      <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
+        <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary flex items-center justify-between gap-2">
+          <span>Class Results - {classResults.length} Students</span>
+          <div className="flex items-center gap-2 print:hidden">
+            <Button onClick={printResults} variant="outline" size="sm"><Printer data-icon="inline-start" />Print</Button>
+            <Button onClick={exportClassResultsXlsx} variant="outline" size="sm"><FileSpreadsheet data-icon="inline-start" />Excel</Button>
+          </div>
+          {(classSchoolName || classResults[0]?.attendedSchool) && (
+            <span className="text-xs sm:text-sm font-normal text-muted-foreground bg-background px-2.5 py-1 rounded-md border border-border">
+              School: <strong className="text-foreground">{classSchoolName || classResults[0]?.attendedSchool}</strong>
+            </span>
+          )}
+        </DialogTitle>
+      </DialogHeader>
 
-      {/* Class Results Modal */}
-      {showClassResults && classResults && (
-        <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
-          <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 overflow-hidden flex flex-col">
-            <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
-              <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary">
-                Class Results - {classResults.length} Students
-              </DialogTitle>
-            </DialogHeader>
+      <div className="flex-1 min-h-0 min-w-0 relative flex flex-col">
+        {/* Table Title / School Name Banner directly above the header */}
+        <div className="bg-primary/5 px-4 sm:px-6 py-2 border-b border-border flex items-center justify-between text-xs sm:text-sm font-sans flex-shrink-0">
+          <span className="font-semibold text-primary uppercase tracking-wide">
+            Attended School: <span className="text-foreground font-normal normal-case">{classSchoolName || classResults[0]?.attendedSchool || "N/A"}</span>
+          </span>
+          <span className="text-muted-foreground">
+            Year: {examYear} | Level: {levelCode.toUpperCase()}
+          </span>
+        </div>
 
-            <div className="flex-1 min-h-0 relative">
-              <div className="h-full overflow-auto">
-                <Table className="w-full">
-                  <TableHeader className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm shadow-lg border-b-2 border-primary/30">
-                    <TableRow className="hover:bg-primary/5">
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans">
-                        Index No.
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans">
-                        Student Name
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans">
-                        Weight %
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans">
-                        Result
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell">
-                        Placed School
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell">
-                        Combination
-                      </TableHead>
-                      {classSubjects.map((subject) => (
-                        <TableHead
-                          key={subject}
-                          className="text-xs font-semibold text-primary sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-r border-border min-w-[70px] sm:min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans"
-                          title={subject}
-                        >
-                          <div className="text-pretty leading-tight text-xs">
-                            {subject.length > 8 ? subject.substring(0, 8) + "..." : subject}
-                          </div>
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {classResults.map((student, index) => (
-                      <TableRow
-                        key={index}
-                        className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
-                          index % 2 === 0 ? "bg-muted/10" : "bg-background"
-                        }`}
+        {/* Overflow container */}
+<div className="print-table-wrapper flex-1 overflow-auto max-h-[calc(90vh-200px)]">
+  <Table className="w-full border-collapse">
+            <TableHeader className="sticky top-0 z-20 shadow-sm">
+              <TableRow className="hover:bg-primary/5">
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[80px] sm:min-w-[100px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                  Index No.
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[120px] sm:min-w-[150px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                  Student Name
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[140px] sm:min-w-[180px] py-3 sm:py-4 px-2 sm:px-4 font-sans whitespace-nowrap">
+                  Attended School
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[60px] sm:min-w-[80px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
+                  Weight %
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[60px] sm:min-w-[70px] py-3 sm:py-4 px-2 sm:px-4 text-center font-sans whitespace-nowrap">
+                  Result
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
+                  Placed School
+                </TableHead>
+                <TableHead className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[100px] sm:min-w-[120px] py-3 sm:py-4 px-2 sm:px-4 font-sans hidden sm:table-cell whitespace-nowrap">
+                  Combination
+                </TableHead>
+                {classSubjects.map((subject) => (
+                  <TableHead
+                    key={subject}
+                    className="sticky top-0 z-20 bg-background text-xs font-semibold text-primary border-b-2 border-r border-border min-w-[90px] py-3 sm:py-4 px-1 sm:px-2 text-center font-sans whitespace-nowrap"
+                    title={subject}
+                  >
+                    <div className="text-pretty leading-tight text-xs">
+                      {subject.length > 8 ? subject.substring(0, 8) + "..." : subject}
+                    </div>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {classResults.map((student, index) => (
+                <TableRow
+                  key={index}
+                  className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
+                    index % 2 === 0 ? "bg-muted/10" : "bg-background"
+                  }`}
+                >
+                  <TableCell className="font-mono text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground whitespace-nowrap">
+                    <div>{student.studentIndexNumber}</div>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground font-sans whitespace-nowrap"
+                    title={student.studentNames}
+                  >
+                    <div>{student.studentNames}</div>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans whitespace-nowrap"
+                    title={student.attendedSchool || "-"}
+                  >
+                    <div>{student.attendedSchool || "-"}</div>
+                  </TableCell>
+                  <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
+                    <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
+                      {student.weightedPercent}%
+                    </span>
+                  </TableCell>
+                  <TableCell className="border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
+                    <Badge
+                      className={`text-xs font-semibold font-sans px-1.5 py-0.5 ${
+                        student.division === "PASS"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-destructive text-destructive-foreground"
+                      }`}
+                    >
+                      {student.division}
+                    </Badge>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell whitespace-nowrap"
+                    title={student.placedSchoolName || "-"}
+                  >
+                    <div>{student.placedSchoolName || "-"}</div>
+                  </TableCell>
+                  <TableCell
+                    className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell whitespace-nowrap"
+                    title={student.placedCombinationName || "-"}
+                  >
+                    <div>{student.placedCombinationName || "-"}</div>
+                  </TableCell>
+                  {classSubjects.map((subject) => {
+                    const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
+                    const mark =
+                      typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
+                    const grade = markObj?.letterGrade ?? "-"
+                    return (
+                      <TableCell
+                        key={subject}
+                        className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center whitespace-nowrap"
                       >
-                        <TableCell className="font-mono text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground">
-                          <div className="text-pretty">{student.studentIndexNumber}</div>
-                        </TableCell>
-                        <TableCell
-                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 font-medium text-foreground font-sans"
-                          title={student.studentNames}
-                        >
-                          <div className="text-pretty leading-tight">{student.studentNames}</div>
-                        </TableCell>
-                        <TableCell className="font-bold text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
-                          <span className="bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold font-sans text-xs">
-                            {student.weightedPercent}%
-                          </span>
-                        </TableCell>
-                        <TableCell className="border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-center">
-                          <Badge
-                            className={`text-xs font-semibold font-sans px-1.5 py-0.5 ${
-                              student.division === "PASS"
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-destructive text-destructive-foreground"
-                            }`}
-                          >
-                            {student.division}
-                          </Badge>
-                        </TableCell>
-                        <TableCell
-                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
-                          title={student.placedSchoolName || "-"}
-                        >
-                          <div className="text-pretty leading-tight">{student.placedSchoolName || "-"}</div>
-                        </TableCell>
-                        <TableCell
-                          className="text-xs border-r border-border/30 py-2 sm:py-3 px-2 sm:px-4 text-muted-foreground font-sans hidden sm:table-cell"
-                          title={student.placedCombinationName || "-"}
-                        >
-                          <div className="text-pretty leading-tight">{student.placedCombinationName || "-"}</div>
-                        </TableCell>
-                        {classSubjects.map((subject) => {
-                          const markObj = student?.rawMark?.find((m) => m?.subject?.subjectName === subject)
-                          const mark =
-                            typeof markObj?.markPercent === "number" ? `${markObj.markPercent.toFixed(1)}%` : "-"
-                          const grade = markObj?.letterGrade ?? "-"
-                          return (
-                            <TableCell
-                              key={subject}
-                              className="border-r border-border/30 py-2 sm:py-3 px-1 sm:px-2 text-center"
+                        {markObj ? (
+                          <div className="space-y-0.5 sm:space-y-1">
+                            <div className="font-medium text-xs text-foreground bg-muted/50 px-1 sm:px-2 py-0.5 rounded font-sans">
+                              {mark}
+                            </div>
+                            <Badge
+                              className={`${getGradeColor(grade)} text-xs px-1 py-0.5 font-semibold font-sans`}
                             >
-                              {markObj ? (
-                                <div className="space-y-0.5 sm:space-y-1">
-                                  <div className="font-medium text-xs text-foreground bg-muted/50 px-1 sm:px-2 py-0.5 rounded font-sans">
-                                    {mark}
-                                  </div>
-                                  <Badge
-                                    className={`${getGradeColor(grade)} text-xs px-1 py-0.5 font-semibold font-sans`}
-                                  >
-                                    {grade}
-                                  </Badge>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-muted-foreground font-sans">-</span>
-                              )}
-                            </TableCell>
-                          )
-                        })}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                              {grade}
+                            </Badge>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground font-sans">-</span>
+                        )}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
-              <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
-                  <p className="text-xs sm:text-sm font-semibold text-destructive font-sans">Important Notice</p>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
-                  This bulk checking method is designed for{" "}
-                  <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
-                  Advanced level results require individual checking with National ID verification.
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+        <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
+            <p className="text-xs sm:text-sm font-semibold text-destructive font-sans">Important Notice</p>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
+            This bulk checking method is designed for{" "}
+            <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
+            Advanced, TSS, and Professional results can be checked using the index number.
+          </p>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+)}
     </div>
   )
 }
