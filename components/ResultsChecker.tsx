@@ -115,7 +115,6 @@ const ResultsChecker = () => {
 
   // Individual states
   const [indexNumber, setIndexNumber] = useState("")
-  const [nationalId, setNationalId] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<StudentResult | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -133,8 +132,7 @@ const ResultsChecker = () => {
   // Individual fetch
   const getResults = async () => {
     const normalizedIndex = indexNumber.trim()
-    const normalizedNationalId = nationalId.trim()
-    if (!/^[A-Za-z0-9-]{3,40}$/.test(normalizedIndex) || (activeTab === "ADVANCED" && !/^[A-Za-z0-9-]{3,40}$/.test(normalizedNationalId))) {
+      if (!/^[A-Za-z0-9-]{3,40}$/.test(normalizedIndex)) {
       toast({
         title: "Missing Information",
         description: "Please enter all required fields.",
@@ -148,30 +146,23 @@ const ResultsChecker = () => {
 
     try {
       let data: unknown
-      if (activeTab === "ORDINARY") {
-        const publicationOpen = await checkRnePublication()
-        if (!publicationOpen) {
-          toast({
-            title: "Results Not Available",
-            description: "Results publication is currently closed. Please try again later.",
-            variant: "destructive",
-          })
-          return
-        }
+      const publicationOpen = await checkRnePublication()
+      if (!publicationOpen) {
+        toast({
+          title: "Results Not Available",
+          description: "Results publication is currently closed. Please try again later.",
+          variant: "destructive",
+        })
+        return
+      }
 
-        const { response, data: rneData } = await fetchRneByIndex(normalizedIndex)
-        if (response.status === 404) {
-          data = null
-        } else if (!response.ok) {
-          throw new Error("Failed to fetch results")
-        } else {
-          data = rneData
-        }
+      const { response, data: rneData } = await fetchRneByIndex(normalizedIndex)
+      if (response.status === 404) {
+        data = null
+      } else if (!response.ok) {
+        throw new Error("Failed to fetch results")
       } else {
-        const apiUrl = `https://secondary.sdms.gov.rw/api//api/results-publication/findByIndexAndNationalId?indexNumber=${encodeURIComponent(normalizedIndex)}&nationalId=${encodeURIComponent(normalizedNationalId)}&_t=${Date.now()}&_cb=${Math.random()}`
-        const res = await fetch(apiUrl, { headers: { Accept: "application/json" } })
-        if (!res.ok) throw new Error("Failed to fetch results")
-        data = await res.json()
+        data = rneData
       }
 
       const candidate = data as Partial<StudentResult> | null
@@ -206,10 +197,10 @@ const ResultsChecker = () => {
     const normalizedSchoolCode = schoolCode.trim()
     const normalizedLevelCode = levelCode.trim()
     const normalizedExamYear = examYear.trim()
-    if (!/^[A-Za-z0-9-]{1,20}$/.test(normalizedSchoolCode) || !/^[A-Za-z0-9-]{1,10}$/.test(normalizedLevelCode) || !/^\d{4}$/.test(normalizedExamYear)) {
+    if (!/^[A-Za-z0-9]{6}$/.test(normalizedSchoolCode) || !/^[A-Za-z]{3}$/.test(normalizedLevelCode) || !/^\d{4}$/.test(normalizedExamYear)) {
       toast({
         title: "Missing Information",
-        description: "Please enter School Code, Level Code (OLC/PR), and Exam Year.",
+        description: "Enter a 6-character school code, 3-letter combination code, and 4-digit exam year.",
         variant: "destructive",
       })
       return
@@ -248,7 +239,6 @@ const ResultsChecker = () => {
             continue
           }
           if (!res.ok) {
-            failedCount++
             throw new Error(`Failed to fetch class result (${res.status})`)
           }
           if (data && typeof data === "object" && "studentNames" in data) {
@@ -517,15 +507,6 @@ const ResultsChecker = () => {
                       className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground font-sans">National Identity Number</label>
-                    <Input
-                      placeholder="Enter your national ID"
-                      value={nationalId}
-                      onChange={(e) => setNationalId(e.target.value)}
-                      className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
-                    />
-                  </div>
                   <Button
                     onClick={getResults}
                     disabled={loading}
@@ -589,9 +570,9 @@ const ResultsChecker = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground font-sans">Level Code</label>
+                    <label className="text-sm font-medium text-foreground font-sans">Combination Code</label>
                     <Input
-                      placeholder="e.g., OLC for Ordinary, PR for Primary"
+                      placeholder="e.g., OLC, PR, or FOP"
                       value={levelCode}
                       onChange={(e) => setLevelCode(e.target.value)}
                       className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
@@ -690,7 +671,7 @@ const ResultsChecker = () => {
                   No Class Results Yet
                 </h3>
                 <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed font-sans">
-                  Enter the School Code, Level Code (OLC/PR), and Exam Year above, then click{" "}
+                  Enter the School Code, Combination Code (such as OLC, PR, or FOP), and Exam Year above, then click{" "}
                   <span className="font-semibold text-primary">Fetch Class Results</span> to view all student results
                   for that class.
                 </p>
@@ -1145,7 +1126,7 @@ const ResultsChecker = () => {
           <p className="text-xs sm:text-sm text-muted-foreground font-sans leading-relaxed">
             This bulk checking method is designed for{" "}
             <span className="font-semibold text-foreground">Primary and Ordinary level</span> students only.
-            Advanced level results require individual checking with National ID verification.
+            Advanced, TSS, and Professional results can be checked using the index number.
           </p>
         </div>
       </div>
