@@ -212,7 +212,10 @@ const ResultsChecker = () => {
 
     try {
       const results: StudentResult[] = []
+      let seq = 1
+      let emptyCount = 0
       let failedCount = 0
+      const MAX_CONSECUTIVE_EMPTY = 20
       const MAX_STUDENTS = 1000
 
       const publicationOpen = await checkRnePublication()
@@ -225,29 +228,30 @@ const ResultsChecker = () => {
         return
       }
 
-      const indexes = Array.from({ length: MAX_STUDENTS }, (_, offset) => {
-        const sequence = String(offset + 1).padStart(3, "0")
-        return `${normalizedSchoolCode}${normalizedLevelCode.toUpperCase()}${sequence}${normalizedExamYear}`
-      })
-      const batchResponse = await fetch(`${RNE_PROXY_URL}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ indexes }),
-        cache: "no-store",
-      })
-      const batchData = await readRneJson(batchResponse) as { results?: Array<{ result?: unknown; error?: string }> } | null
-      if (!batchResponse.ok || !batchData || !Array.isArray(batchData.results)) {
-        throw new Error(batchResponse.status === 429 ? "Too many requests. Please try again shortly." : "Unable to fetch class results")
-      }
-
-      for (const item of batchData.results) {
-        if (item.error) {
+      while (emptyCount < MAX_CONSECUTIVE_EMPTY && seq <= MAX_STUDENTS) {
+        const seqStr = String(seq).padStart(3, "0")
+        const idx = `${normalizedSchoolCode}${normalizedLevelCode.toUpperCase()}${seqStr}${normalizedExamYear}`
+        try {
+          const { response: res, data } = await fetchRneByIndex(idx)
+          if (res.status === 404) {
+            emptyCount++
+            seq++
+            continue
+          }
+          if (!res.ok) {
+            throw new Error(`Failed to fetch class result (${res.status})`)
+          }
+          if (data && typeof data === "object" && "studentNames" in data) {
+            results.push(data as StudentResult)
+            emptyCount = 0
+          } else {
+            emptyCount++
+          }
+        } catch {
           failedCount++
-          continue
+          emptyCount++
         }
-        if (item.result && typeof item.result === "object" && "studentNames" in item.result) {
-          results.push(item.result as StudentResult)
-        }
+        seq++
       }
 
       results.sort((a, b) => (b?.weightedPercent ?? 0) - (a?.weightedPercent ?? 0))
