@@ -972,7 +972,7 @@ const ResultsChecker = () => {
   <Dialog open={showClassResults} onOpenChange={setShowClassResults}>
     <DialogContent className="printable-results max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
       {/* Dialog Header Title with Attended School Name */}
-      <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
+      <DialogHeader className="print-header px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
         <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary flex items-center justify-between gap-2">
           <span>Class Results - {classResults.length} Students</span>
           <div className="flex items-center gap-2 print:hidden">
@@ -989,7 +989,7 @@ const ResultsChecker = () => {
 
       <div className="flex-1 min-h-0 min-w-0 relative flex flex-col">
         {/* Table Title / School Name Banner directly above the header */}
-        <div className="bg-primary/5 px-4 sm:px-6 py-2 border-b border-border flex items-center justify-between text-xs sm:text-sm font-sans flex-shrink-0">
+        <div className="print-meta bg-primary/5 px-4 sm:px-6 py-2 border-b border-border flex items-center justify-between text-xs sm:text-sm font-sans flex-shrink-0">
           <span className="font-semibold text-primary uppercase tracking-wide">
             Attended School: <span className="text-foreground font-normal normal-case">{classSchoolName || classResults[0]?.attendedSchool || "N/A"}</span>
           </span>
@@ -1121,7 +1121,7 @@ const ResultsChecker = () => {
           </Table>
         </div>
 
-        <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
+        <div className="print:hidden p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg m-4 flex-shrink-0">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full flex-shrink-0"></div>
             <p className="text-xs sm:text-sm font-semibold text-destructive font-sans">Important Notice</p>
