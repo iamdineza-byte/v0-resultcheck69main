@@ -197,10 +197,10 @@ const ResultsChecker = () => {
     const normalizedSchoolCode = schoolCode.trim()
     const normalizedLevelCode = levelCode.trim()
     const normalizedExamYear = examYear.trim()
-    if (!/^[A-Za-z0-9]{6}$/.test(normalizedSchoolCode) || !/^[A-Za-z]{3}$/.test(normalizedLevelCode) || !/^\d{4}$/.test(normalizedExamYear)) {
+    if (!/^[A-Za-z0-9]{6}$/.test(normalizedSchoolCode) || !/^[A-Za-z]{2,3}$/.test(normalizedLevelCode) || !/^\d{4}$/.test(normalizedExamYear)) {
       toast({
         title: "Missing Information",
-        description: "Enter a 6-character school code, 3-letter combination code, and 4-digit exam year.",
+        description: "Enter a 6-character school code, 2–3 letter combination code, and 4-digit exam year.",
         variant: "destructive",
       })
       return
