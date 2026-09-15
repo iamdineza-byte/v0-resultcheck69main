@@ -124,6 +124,8 @@ const ResultsChecker = () => {
   const [levelCode, setLevelCode] = useState("")
   const [examYear, setExamYear] = useState("")
   const [classLoading, setClassLoading] = useState(false)
+  const [classScanProgress, setClassScanProgress] = useState({ current: 0, total: 300 })
+  const [classSearch, setClassSearch] = useState("")
   const [classResults, setClassResults] = useState<StudentResult[]>([])
   const [classSchoolName, setClassSchoolName] = useState("")
   const [isClassModalOpen, setIsClassModalOpen] = useState(false)
@@ -207,14 +209,18 @@ const ResultsChecker = () => {
     }
 
     setClassLoading(true)
+    setClassScanProgress({ current: 0, total: 300 })
+    setClassSearch("")
     setClassResults([])
     setClassSchoolName("")
 
     try {
       const results: StudentResult[] = []
       let seq = 1
+      let emptyCount = 0
       let failedCount = 0
-      const MAX_STUDENTS = 1000
+      const MAX_CONSECUTIVE_EMPTY = 20
+      const MAX_STUDENTS = 300
 
       const publicationOpen = await checkRnePublication()
       if (!publicationOpen) {
@@ -226,15 +232,17 @@ const ResultsChecker = () => {
         return
       }
 
-      while (seq <= MAX_STUDENTS) {
+      while (emptyCount < MAX_CONSECUTIVE_EMPTY && seq <= MAX_STUDENTS) {
         const seqStr = String(seq).padStart(3, "0")
         const idx = `${normalizedSchoolCode}${normalizedLevelCode.toUpperCase()}${seqStr}${normalizedExamYear}`
+        setClassScanProgress({ current: seq, total: MAX_STUDENTS })
         if (seq % 25 === 0) {
           toast({ title: "Scanning class results", description: `Checked ${seq} of ${MAX_STUDENTS} index positions.` })
         }
         try {
           const { response: res, data } = await fetchRneByIndex(idx)
           if (res.status === 404) {
+            emptyCount++
             seq++
             continue
           }
@@ -243,6 +251,9 @@ const ResultsChecker = () => {
           }
           if (data && typeof data === "object" && "studentNames" in data) {
             results.push(data as StudentResult)
+            emptyCount = 0
+          } else {
+            emptyCount++
           }
         } catch {
           failedCount++
@@ -283,6 +294,16 @@ const ResultsChecker = () => {
   }
 
   // Build dynamic subject columns for class table
+  const filteredClassResults = useMemo(() => {
+    const query = classSearch.trim().toLowerCase()
+    if (!query) return classResults
+    return classResults.filter((student) =>
+      [student.studentNames, student.studentIndexNumber, student.attendedSchool]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(query))
+    )
+  }, [classResults, classSearch])
+
   const classSubjects = useMemo(() => {
     if (classResults.length === 0) return []
 
@@ -586,6 +607,20 @@ const ResultsChecker = () => {
                       className="h-12 sm:h-12 text-base border-border focus:ring-primary font-sans touch-manipulation"
                     />
                   </div>
+                  {classLoading && (
+                    <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3" role="status" aria-live="polite">
+                      <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+                        <span>Scanning index {String(classScanProgress.current).padStart(3, "0")} of 300</span>
+                        <span>{Math.round((classScanProgress.current / classScanProgress.total) * 100)}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-200"
+                          style={{ width: `${(classScanProgress.current / classScanProgress.total) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <Button
                     onClick={fetchClassResults}
                     disabled={classLoading}
@@ -970,8 +1005,15 @@ const ResultsChecker = () => {
       {/* Dialog Header Title with Attended School Name */}
       <DialogHeader className="print-header px-4 sm:px-6 py-4 border-b border-border bg-muted/30 flex-shrink-0">
         <DialogTitle className="text-lg sm:text-xl font-sans font-bold text-primary flex items-center justify-between gap-2">
-          <span>Class Results - {classResults.length} Students</span>
+          <span>Class Results - {filteredClassResults.length}{classSearch ? ` of ${classResults.length}` : ""} Students</span>
           <div className="flex items-center gap-2 print:hidden">
+            <Input
+              value={classSearch}
+              onChange={(event) => setClassSearch(event.target.value)}
+              placeholder="Search student..."
+              aria-label="Search class results"
+              className="h-9 w-40 sm:w-56"
+            />
             <Button onClick={printResults} variant="outline" size="sm"><Printer data-icon="inline-start" />Print</Button>
             <Button onClick={exportClassResultsXlsx} variant="outline" size="sm"><FileSpreadsheet data-icon="inline-start" />Excel</Button>
           </div>
@@ -1034,7 +1076,7 @@ const ResultsChecker = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {classResults.map((student, index) => (
+              {filteredClassResults.map((student, index) => (
                 <TableRow
                   key={index}
                   className={`border-b border-border/30 hover:bg-muted/50 transition-colors duration-150 ${
