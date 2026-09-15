@@ -213,9 +213,7 @@ const ResultsChecker = () => {
     try {
       const results: StudentResult[] = []
       let seq = 1
-      let emptyCount = 0
       let failedCount = 0
-      const MAX_CONSECUTIVE_EMPTY = 20
       const MAX_STUDENTS = 1000
 
       const publicationOpen = await checkRnePublication()
@@ -228,13 +226,15 @@ const ResultsChecker = () => {
         return
       }
 
-      while (emptyCount < MAX_CONSECUTIVE_EMPTY && seq <= MAX_STUDENTS) {
+      while (seq <= MAX_STUDENTS) {
         const seqStr = String(seq).padStart(3, "0")
         const idx = `${normalizedSchoolCode}${normalizedLevelCode.toUpperCase()}${seqStr}${normalizedExamYear}`
+        if (seq % 25 === 0) {
+          toast({ title: "Scanning class results", description: `Checked ${seq} of ${MAX_STUDENTS} index positions.` })
+        }
         try {
           const { response: res, data } = await fetchRneByIndex(idx)
           if (res.status === 404) {
-            emptyCount++
             seq++
             continue
           }
@@ -243,13 +243,9 @@ const ResultsChecker = () => {
           }
           if (data && typeof data === "object" && "studentNames" in data) {
             results.push(data as StudentResult)
-            emptyCount = 0
-          } else {
-            emptyCount++
           }
         } catch {
           failedCount++
-          emptyCount++
         }
         seq++
       }
