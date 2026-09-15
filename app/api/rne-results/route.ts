@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 const allowedEndpoints = new Set(["status", "by-index"])
 const INDEX_PATTERN = /^[A-Za-z0-9-]{3,40}$/
 const requestCounts = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT = 30
+const RATE_LIMIT = 400
 const WINDOW_MS = 60_000
 function getClientKey(request: Request) {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous"
